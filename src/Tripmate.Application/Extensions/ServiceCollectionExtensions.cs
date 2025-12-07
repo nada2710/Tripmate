@@ -1,0 +1,169 @@
+﻿using FluentValidation;
+using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using StackExchange.Redis;
+using System.Reflection;
+using Tripmate.Application.Reviews;
+using Tripmate.Application.Services.Abstractions.Attraction;
+using Tripmate.Application.Services.Abstractions.Country;
+using Tripmate.Application.Services.Abstractions.Favorite;
+using Tripmate.Application.Services.Abstractions.Hotel;
+using Tripmate.Application.Services.Abstractions.Identity;
+using Tripmate.Application.Services.Abstractions.Region;
+using Tripmate.Application.Services.Abstractions.Restaurant;
+using Tripmate.Application.Services.Attractions;
+using Tripmate.Application.Services.Caching;
+using Tripmate.Application.Services.Countries;
+using Tripmate.Application.Services.Countries.DTOs;
+using Tripmate.Application.Services.FavoriteList;
+using Tripmate.Application.Services.Hotels;
+using Tripmate.Application.Services.Identity;
+using Tripmate.Application.Services.Identity.ForgotPassword;
+using Tripmate.Application.Services.Identity.Login;
+using Tripmate.Application.Services.Identity.RefreshTokens;
+using Tripmate.Application.Services.Identity.Register;
+using Tripmate.Application.Services.Identity.Register.DTOs;
+using Tripmate.Application.Services.Identity.ResetPassword;
+using Tripmate.Application.Services.Identity.Token;
+using Tripmate.Application.Services.Identity.VerifyEmail;
+using Tripmate.Application.Services.Image;
+using Tripmate.Application.Services.Regions;
+using Tripmate.Application.Services.Restaurants;
+using Tripmate.Domain.AppSettings;
+using Tripmate.Domain.Common.Response;
+using Tripmate.Domain.Common.User;
+using Tripmate.Domain.Services.Interfaces.Identity;
+
+
+namespace Tripmate.Application.Extension
+{
+    public static class ServiceCollectionExtensions
+    {
+        public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
+        {
+           
+            // Register application services here
+            services.RegisterApplicationServices(configuration);
+
+
+            // Register FluentValidation
+            services.AddFluentValidation();
+            services.AddValidationErrorHandlingServices();
+
+            // Register options
+            services.OptionsSetup(configuration);
+
+            // Register AutoMapper
+            services.AddAutoMapperServices();
+
+            // Register CacheService
+            services.AddCacheService(configuration);
+
+            // Register FluentValidation
+            return services;
+        }
+
+        public static IServiceCollection RegisterApplicationServices(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IRefreshTokenHandler, RefreshTokenHandler>();
+            services.AddScoped<ILoginHandler, LoginHandler>();
+            services.AddScoped<IRegisterHandler, RegisterHandler>();
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IRefreshTokenHandler, RefreshTokenHandler>();
+            services.AddScoped<IEmailHandler, EmailHandler>();
+            services.AddScoped<IForgetPasswordHandler, ForgetPasswordHandler>();
+            services.AddScoped<IResetPasswordHandler, ResetPasswordHandler>();
+            services.AddScoped<ICountryService, CountryService>();
+            services.AddScoped<IFileService, FileService>();
+            services.AddScoped<IAttractionService, AttractionService>();
+            services.AddScoped<IRegionService, RegionService>();
+            services.AddScoped<IRestaurantService, RestaurantServices>();
+            services.AddScoped<ICacheService, CacheService>();
+            services.AddScoped<IHotelServices, HotelServices>();
+            services.AddScoped<IUserContext, UserContext>();
+            services.AddScoped<IReviewService,ReviewService>();
+            services.AddScoped<IFavoriteService, FavoriteService>();
+
+
+            services.AddHttpContextAccessor(); // Required for IHttpContextAccessor injection
+
+            services.AddMemoryCache();
+            return services;
+        }
+        private static IServiceCollection OptionsSetup(this IServiceCollection services, IConfiguration configuration)
+        {
+            // Configure your application settings here
+            services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
+            
+            return services;
+
+        }
+
+        private static void AddAutoMapperServices(this IServiceCollection services)
+        {
+            var applicationsAssembly = Assembly.GetExecutingAssembly();
+            services.AddAutoMapper(applicationsAssembly);
+        }
+        private static void AddValidationErrorHandlingServices(this IServiceCollection services)
+        {
+            services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.InvalidModelStateResponseFactory = actionContext =>
+                {
+                    var errors = actionContext.ModelState
+                        .Where(e => e.Value.Errors.Count > 0)
+                        .SelectMany(x => x.Value.Errors)
+                        .Select(x => x.ErrorMessage).ToList();
+
+                    var result = new ApiResponse<string>(
+                        success: false,
+                        statusCode: 400,
+                        message: "Validation errors",
+                        errors: errors
+                        );
+
+
+                    return new BadRequestObjectResult(result);
+                };
+            }
+            );
+
+
+        }
+
+        private static void AddFluentValidation(this IServiceCollection services)
+        {
+            // Register FluentValidation services
+
+            services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly())
+                .AddFluentValidationAutoValidation();
+
+
+        }
+
+        private static void AddCacheService(this IServiceCollection services, IConfiguration configuration)
+        {
+            // Register CacheService and its dependencies here
+
+            services.AddSingleton<IConnectionMultiplexer>(servicesProvider =>
+            {
+                try
+                {
+                    var redisConfiguration = configuration.GetSection("Redis")["Configuration"];
+                    return ConnectionMultiplexer.Connect(redisConfiguration);
+                }
+                catch (Exception ex)
+                {
+                    var logger = servicesProvider.GetRequiredService<ILogger<CacheService>>();
+                    logger.LogWarning( "Could not connect to Redis. Falling back to in-memory cache.");
+                    return null;
+                }
+
+            });
+        }
+    }
+}
