@@ -222,27 +222,5 @@ namespace Tripmate.ApplicationTests.Services.Hotels
 
         }
 
-        //public async Task<ApiResponse<bool>> DeleteHotel(int id)
-        //{
-        //    _logger.LogInformation("Deleting hotel with ID: {HotelId}", id);
-
-        //    var hotel = await _unitOfWork.Repository<Hotel, int>().GetByIdAsync(id);
-        //    if (hotel == null)
-        //    {
-        //        _logger.LogWarning("Hotel not found for deletion with ID: {HotelId}", id);
-        //        throw new NotFoundException($"Hotel with ID {id} not found.");
-        //    }
-
-        //    if (!string.IsNullOrEmpty(hotel.ImageUrl))
-        //    {
-        //        _fileService.DeleteImage(hotel.ImageUrl, "Hotels");
-        //        _logger.LogDebug("Deleted hotel image: {ImagePath}", hotel.ImageUrl);
-        //    }
-
-        //   
-
-        //   
-        //}
-
     }
 }

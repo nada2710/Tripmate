@@ -12,6 +12,8 @@ namespace Tripmate.API
             // Add All Services
             builder.Services.AddAllServices(builder.Configuration);
             builder.Host.AddSerilogService();
+
+
             try
             {
                 Log.Information("Application Starting Up");
@@ -28,6 +30,10 @@ namespace Tripmate.API
             {
                 Log.CloseAndFlush();
             }
+
+
+
+
             }
     }
 }

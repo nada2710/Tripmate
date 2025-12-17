@@ -12,7 +12,7 @@ public class RegisterDtoValidatorTests
 
     #region Valid Test Cases
     [Theory]
-    [InlineData("Hisham", "hisham@gmail.com", "01008295779", "Hisham@123", "Hisham@123", "Egypt")]
+    [InlineData("Osama", "osama@gmail.com", "01008295779", "Osama@123", "Osama@123", "Egypt")]
     public void RegisterDto_WithValidData_ShouldPassValidation(string username, string email, string phoneNumber, string password, string confirmPassword, string country)
     {
         var dto = new RegisterDto
@@ -45,7 +45,7 @@ public class RegisterDtoValidatorTests
             UserName = invalidUsername,
             Email = "valid@email.com",
             PhoneNumber = "201008295779",
-            Password = "Hisham123",
+            Password = "osama123",
             ConfirmPassword = "Hisham123",
             Country = "Egypt"
 
@@ -72,8 +72,8 @@ public class RegisterDtoValidatorTests
             UserName = "ValidUser",
             Email = invalidEmail!,
             PhoneNumber = "201008295779",
-            Password = "Hisham@123",
-            ConfirmPassword = "Hisham@123",
+            Password = "osama@123",
+            ConfirmPassword = "osama@123",
             Country = "Egypt"
         };
         var result = _validator.Validate(dto);
@@ -99,8 +99,8 @@ public class RegisterDtoValidatorTests
             UserName = "validUsername",
             Email = "valid@email.com",
             PhoneNumber = invalidPhoneNumber!,
-            Password = "Hisham123",
-            ConfirmPassword = "Hisham123",
+            Password = "osama123",
+            ConfirmPassword = "osama123",
             Country = "Egypt"
 
         };
@@ -116,9 +116,9 @@ public class RegisterDtoValidatorTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("12345")]
-    [InlineData("hisham")]
-    [InlineData("hisham23")]
-    [InlineData("HISHAM45")]
+    [InlineData("osama")]
+    [InlineData("osama23")]
+    [InlineData("OSAMA45")]
 
     public void RegisterDto_WithInvalidPassword_ShouldFailValidation(string invalidPassword)
     {
@@ -128,7 +128,7 @@ public class RegisterDtoValidatorTests
             Email = "valid@email.com",
             PhoneNumber = "01008295776",
             Password = invalidPassword,
-            ConfirmPassword = "Hisham123",
+            ConfirmPassword = "osama123",
             Country = "Egypt"
         };
         var result = _validator.Validate(dto);
@@ -175,7 +175,7 @@ public class RegisterDtoValidatorTests
             UserName = "validUsername",
             Email = "valid@email.com",
             PhoneNumber = "01008295776",
-            Password = "Hisham@123",
+            Password = "osama@123",
             ConfirmPassword = "Hisham@123",
             Country = invalidCountry
         };

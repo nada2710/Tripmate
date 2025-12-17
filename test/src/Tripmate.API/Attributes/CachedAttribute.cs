@@ -37,6 +37,7 @@ namespace Tripmate.API.Attributes
             {
                 await cacheService.SetAsync(cacheKey, okObjectResult.Value, TimeSpan.FromHours(_expirationInHour));
             }
+
         }
 
         private string GenerateCacheKeyFromRequest(HttpRequest request)

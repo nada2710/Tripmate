@@ -131,8 +131,6 @@ namespace Tripmate.Application.Extension
                 };
             }
             );
-
-
         }
 
         private static void AddFluentValidation(this IServiceCollection services)
@@ -141,8 +139,6 @@ namespace Tripmate.Application.Extension
 
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly())
                 .AddFluentValidationAutoValidation();
-
-
         }
 
         private static void AddCacheService(this IServiceCollection services, IConfiguration configuration)
